@@ -46,11 +46,17 @@ let handler = async (m, { conn, args }) => {
     }
 
     const characterName = args.slice(0, -1).join(' ').toLowerCase().trim();
-    const mentionedUser = args[args.length - 1];
+    const mentionedUserArg = args[args.length - 1];
 
-    if (!mentionedUser.startsWith('@')) {
+    if (!mentionedUserArg.startsWith('@')) {
         await conn.reply(m.chat, '《✧》Debes mencionar a un usuario válido.', m);
         return;
+    }
+    let mentionedUser;
+    if (m.mentionedJid && m.mentionedJid.length > 0) {
+         mentionedUser = m.mentionedJid[0];
+    } else {
+         mentionedUser = mentionedUserArg;
     }
 
     try {
@@ -62,12 +68,12 @@ let handler = async (m, { conn, args }) => {
             return;
         }
 
-        character.user = mentionedUser.replace('@', '');
+        character.user = mentionedUser;
         await saveCharacters(characters);
 
         const harem = await loadHarem();
         const userEntry = {
-            userId: mentionedUser.replace('@', ''),
+            userId: mentionedUser,
             characterId: character.id,
             lastClaimTime: Date.now()
         };
