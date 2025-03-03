@@ -11,7 +11,7 @@
 
 - Grupo oficial del Bot
 
-* <a href="https://chat.whatsapp.com/GWNT8saooXmA4dn5Kga8kp"><img alt="WaBot" src="https://img.shields.io/badge/Yuki-Grupo-25D366?style=for-the-badge&logo=whatsapp&logoColor=white"/></a>
+* <a href="https://chat.whatsapp.com/HTx6CmRzR9q6pNoR3PQO2g"><img alt="WaBot" src="https://img.shields.io/badge/Yuki-Grupo-25D366?style=for-the-badge&logo=whatsapp&logoColor=white"/></a>
 
 ---
 
