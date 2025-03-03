@@ -29,16 +29,17 @@ let handler = async (m, { conn, args }) => {
 
         if (m.quoted && m.quoted.sender) {
             userId = m.quoted.sender;
-        } else if (args[0] && args[0].startsWith('@')) {
-            userId = args[0].replace('@', '');
+        } else if (args[0] && args[0].startsWith('@') && m.mentionedJid && m.mentionedJid.length) {
+            userId = m.mentionedJid[0]; // Usamos el ID completo proporcionado por WhatsApp
         } else {
             userId = m.sender;
         }
 
+        // Filtramos los personajes cuyo dueño coincida con el ID completo (con "@s.whatsapp.net")
         const userCharacters = characters.filter(character => character.user === userId);
 
         if (userCharacters.length === 0) {
-            await conn.reply(m.chat, '❀ No tiene personajes reclamados en tu harem.', m);
+            await conn.reply(m.chat, '❀ No tiene personajes reclamados en su harem.', m);
             return;
         }
 
