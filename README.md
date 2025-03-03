@@ -28,4 +28,4 @@
 
 <a href="https://github.com/LiuDoni2"><img src="https://github.com/OfcKing.png" width="300" height="300" alt="Alex"/></a>
 
-`© Senko San - MD • Alex-X`
+`© Yuki Souo - MD • Liu OFC`
