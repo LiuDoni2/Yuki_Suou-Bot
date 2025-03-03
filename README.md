@@ -2,7 +2,7 @@
 
 <h1 align="center">✦ Yυƙι-Sυσυ-Bσƚ ✦</p>
 <p>
-        <img src = "https://qu.ax/lRebp.jpg">
+        <img src = "https://pin.it/2WBXR9JgQ">
     </p>
 
 ---
