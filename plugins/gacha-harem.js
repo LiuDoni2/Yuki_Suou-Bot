@@ -30,12 +30,11 @@ let handler = async (m, { conn, args }) => {
         if (m.quoted && m.quoted.sender) {
             userId = m.quoted.sender;
         } else if (args[0] && args[0].startsWith('@') && m.mentionedJid && m.mentionedJid.length) {
-            userId = m.mentionedJid[0]; // Usamos el ID completo proporcionado por WhatsApp
+            userId = m.mentionedJid[0]; 
         } else {
             userId = m.sender;
         }
 
-        // Filtramos los personajes cuyo dueño coincida con el ID completo (con "@s.whatsapp.net")
         const userCharacters = characters.filter(character => character.user === userId);
 
         if (userCharacters.length === 0) {
