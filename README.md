@@ -2,7 +2,7 @@
 
 <h1 align="center">✦ Yυƙι-Sυσυ-Bσƚ ✦</p>
 <p>
-        <img src = "https://imgur.com/gallery/yuki-KFXI0mV">
+        <img src = "https://i.imgur.com/3feJlmC.jpeg">
     </p>
 
 ---
