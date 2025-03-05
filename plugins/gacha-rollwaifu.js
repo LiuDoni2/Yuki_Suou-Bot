@@ -56,11 +56,23 @@ let handler = async (m, { conn }) => {
 
   try {
     const characters = await loadCharacters();
-    const randomCharacter = characters[Math.floor(Math.random() * characters.length)];
+    
+    let freeCharacters = characters.filter(c => !c.user);
+    let claimedCharacters = characters.filter(c => c.user);
+
+    let randomCharacter;
+
+    if (freeCharacters.length > 0) {
+      // 📌 Preferir personajes libres
+      randomCharacter = freeCharacters[Math.floor(Math.random() * freeCharacters.length)];
+    } else {
+      randomCharacter = claimedCharacters[Math.floor(Math.random() * claimedCharacters.length)];
+    }
 
     if (!randomCharacter.img || !Array.isArray(randomCharacter.img) || randomCharacter.img.length === 0) {
       throw new Error("El personaje no tiene imágenes definidas.");
     }
+    
     const randomImage = randomCharacter.img[Math.floor(Math.random() * randomCharacter.img.length)];
 
     let ext = 'jpg';
