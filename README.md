@@ -1,31 +1,44 @@
 > 「✰」 Versión actual: ^0.0.5
 
-<h1 align="center">✦ Yυƙι-Sυσυ-Bσƚ ✦</p>
-<p>
-        <img src = "https://i.imgur.com/3feJlmC.jpeg">
-    </p>
-
----
-
-## <img src="https://static.wikia.nocookie.net/nyancat/images/d/d3/Nyan-cat.gif/revision/latest/scale-to-width-down/400?cb=20131231222500&path-prefix=es" alt="Grupo" width="45" height="43"> Grupo de WhatsApp
-
-- Grupo oficial del Bot
-
-* <a href="https://chat.whatsapp.com/HTx6CmRzR9q6pNoR3PQO2g"><img alt="WaBot" src="https://img.shields.io/badge/Yuki-Grupo-25D366?style=for-the-badge&logo=whatsapp&logoColor=white"/></a>
-
----
-
-## <img src="https://i.pinimg.com/originals/19/80/6e/19806e91932e6054965fc83b85241270.gif" alt="Grupo Soporte" width="42" height="42"> Grupo Soporte
-
-- Grupo soporte sobre el bot
-
-* <a href="https://chat.whatsapp.com/I25gNEySd7y7MahyIgxdGJ"><img alt="WaBot" src="https://img.shields.io/badge/Yuki-Soporte-25D366?style=for-the-badge&logo=whatsapp&logoColor=white"/></a>
-
----
-
 <div align="center">
-  <h1 align="center">Propietario de la Bot</h1>
+  <h1>✦ Yυƙι-Sυσυ-Bσƚ ✦</h1>
+  <p>
+    <img src="https://i.imgur.com/3feJlmC.jpeg" alt="Yuki-Suou-Bot" width="500">
+  </p>
+</div>
 
-<a href="https://github.com/LiuDoni2"><img src="https://github.com/OfcKing.png" width="300" height="300" alt="Alex"/></a>
+---
 
-`© Yuki Souo - MD • Liu OFC`
+## Sobre el Bot
+Yυƙι-Sυσυ-Bσƚ es un bot diseñado para mejorar la experiencia de los usuarios en WhatsApp. Ofrece una variedad de funcionalidades y comandos que facilitan la interacción y automatización de tareas.
+
+---
+
+## Grupos Oficiales
+<div align="center">
+  <a href="https://chat.whatsapp.com/HTx6CmRzR9q6pNoR3PQO2g">
+    <img alt="WaBot" src="https://img.shields.io/badge/Yuki-Grupo-25D366?style=for-the-badge&logo=whatsapp&logoColor=white"/>
+  </a>
+  <p>Únete a nuestro grupo oficial para estar al día con las últimas novedades y actualizaciones.</p>
+</div>
+
+## Soporte
+<div align="center">
+  <a href="https://chat.whatsapp.com/I25gNEySd7y7MahyIgxdGJ">
+    <img alt="WaBot" src="https://img.shields.io/badge/Yuki-Soporte-25D366?style=for-the-badge&logo=whatsapp&logoColor=white"/>
+  </a>
+  <p>Únete a nuestro grupo de soporte para obtener ayuda y resolver tus dudas.</p>
+</div>
+
+---
+
+## Propietario del Bot
+<div align="center">
+  <h2>Propietario</h2>
+  <a href="https://github.com/LiuDoni2">
+    <img src="https://github.com/OfcKing.png" width="200" height="200" alt="Alex"/>
+  </a>
+  <p>`© Yuki Souo - MD • Liu OFC`</p>
+</div>
+
+---
