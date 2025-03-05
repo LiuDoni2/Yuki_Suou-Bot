@@ -38,7 +38,7 @@ Yυƙι-Sυσυ-Bσƚ es un bot diseñado para mejorar la experiencia de los usu
   <a href="https://github.com/LiuDoni2">
     <img src="https://github.com/OfcKing.png" width="200" height="200" alt="Alex"/>
   </a>
-  <p>`© Yuki Souo - MD • Liu OFC`</p>
+  <p>`© Yuki Suou - MD • Liu OFC`</p>
 </div>
 
 ---
