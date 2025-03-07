@@ -13,7 +13,42 @@ clearTimeout(this)
 resolve()
 }, ms))
 
+
 export async function handler(chatUpdate) {
+    this.msgQueue = this.msgQueue || []; // Definir msgQueue dentro del handler
+
+    async function processQueue() {
+        if (this.msgQueue.length === 0) return;
+
+        const { sock, jid, msg } = this.msgQueue.shift();
+        await sock.sendMessage(jid, { text: msg });
+
+        setTimeout(() => processQueue.call(this), 3000); // Esperar 2 segundos antes de procesar el siguiente mensaje
+    }
+
+    this.sendQueuedMessage = (sock, jid, msg) => {
+        this.msgQueue.push({ sock, jid, msg });
+        
+        if (this.msgQueue.length === 1) processQueue.call(this);
+    };
+
+    const groupCache = new Map();
+
+    async function getGroupMetadata(conn, chatId) {
+        if (groupCache.has(chatId)) {
+            console.log("Usando caché para metadata del grupo");
+            return groupCache.get(chatId);
+        }
+
+        console.log("Consultando metadata del grupo...");
+        const metadata = await conn.groupMetadata(chatId).catch(_ => null);
+        if (metadata) {
+            groupCache.set(chatId, metadata);
+            setTimeout(() => groupCache.delete(chatId), 5 * 60 * 1000); // Borra caché en 5 minutos
+        }
+        return metadata;
+    }
+
 this.msgqueque = this.msgqueque || []
 this.uptime = this.uptime || Date.now()
 if (!chatUpdate)
