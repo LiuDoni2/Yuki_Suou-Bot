@@ -47,7 +47,7 @@ const handler = async (m, { args, conn }) => {
         delete duelos[chatId];
         conn.reply(m.chat, '⏳ Nadie aceptó el duelo. Apuesta devuelta.', m);
       }
-    }, 30000); // 30 segundos para aceptar el duelo
+    }, 30000); 
   }
 };
 
@@ -59,7 +59,7 @@ async function iniciarDuelo(chatId, conn, m) {
 
   conn.reply(m.chat, `🎯 ¡El duelo ha comenzado!\n🤠 ${jugador1.split('@')[0]} vs 🤠 ${jugador2.split('@')[0]}\n\n⚠️ Esperen la señal "¡DISPARA! 🔫"\nQuien dispare antes del aviso, pierde automáticamente.`, m, { mentions: [jugador1, jugador2] });
 
-  let tiempoEspera = Math.floor(Math.random() * 10000) + 5000; // Entre 5 y 15 segundos
+  let tiempoEspera = Math.floor(Math.random() * 10000) + 5000; 
 
   setTimeout(async () => {
     if (!duelos[chatId]) return;
@@ -74,7 +74,7 @@ async function iniciarDuelo(chatId, conn, m) {
         conn.reply(m.chat, '⌛ Nadie disparó a tiempo. Apuestas devueltas.', m);
         delete duelos[chatId];
       }
-    }, 5000); // Tiempo máximo para disparar
+    }, 5000); 
 
   }, tiempoEspera);
 }
