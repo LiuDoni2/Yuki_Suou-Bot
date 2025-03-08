@@ -42,7 +42,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
 
     let mensaje;
     if (resultado === eleccion) {
-        const ganancia = Math.floor(cantidad * 1.2); // Gana con un 20% extra
+        const ganancia = Math.floor(cantidad * 1.2); 
         user.coin += ganancia;
         mensaje = `🎉 *¡${resultado.toUpperCase()}! Ganaste +${ganancia} ${moneda}* 💰💥`;
     } else {
