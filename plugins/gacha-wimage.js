@@ -33,7 +33,6 @@ let handler = async (m, { conn, args }) => {
             return;
         }
 
-        // Seleccionar una imagen aleatoria
         const randomImage = character.img[Math.floor(Math.random() * character.img.length)];
 
         const message = `❀ Nombre » *${character.name}*
