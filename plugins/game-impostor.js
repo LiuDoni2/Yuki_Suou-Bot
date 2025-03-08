@@ -1,4 +1,4 @@
-//creditos: 劉ī.am/𝕷𝖎̈́𝖚̈́⋆𝕯̈́𝖔̈́𝖓̈́𝖎̈́፨ᵒᶠᶜ劉
+//by: 劉ī.am/𝕷𝖎̈́𝖚̈́⋆𝕯̈́𝖔̈́𝖓̈́𝖎̈́፨ᵒᶠᶜ劉
 const handler = async (m, { conn, participants, args }) => {
   if (!m.isGroup) return conn.reply(m.chat, '⚠️ Este juego solo funciona en grupos.', m);
 
