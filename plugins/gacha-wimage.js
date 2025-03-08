@@ -52,7 +52,7 @@ let handler = async (m, { conn, args }) => {
 
         const randomImage = character.img[Math.floor(Math.random() * character.img.length)];
 
-        const message = `🆔 ID » *${character.id}*\n❀ Nombre » *${character.name}*\n⚥ Género » *${character.gender}*\n❖ Fuente » *${character.source}*`;
+        const message = `ID » *${character.id}*\n❀ Nombre » *${character.name}*\n⚥ Género » *${character.gender}*\n❖ Fuente » *${character.source}*`;
 
         await conn.sendFile(m.chat, randomImage, `${character.name}.jpg`, message, m);
     } catch (error) {
