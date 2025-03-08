@@ -1,39 +1,56 @@
-let users = {};
+const users = {};
 
-let handler = async (m, { conn, text, usedPrefix, command }) => {
+const handler = async (m, { conn, text, usedPrefix, command }) => {
     let [eleccion, cantidad] = text.split(' ');
+
     if (!eleccion || !cantidad) {
-        return m.reply(`${emoji} Por favor, elige cara o cruz y una cantidad de ${moneda} para apostar.\nEjemplo: *${usedPrefix + command} cara 50*`);
+        return m.reply(`🪙 Usa: *${usedPrefix + command} cara 50* para apostar.`);
     }
 
     eleccion = eleccion.toLowerCase();
     cantidad = parseInt(cantidad);
-    if (eleccion !== 'cara' && eleccion !== 'cruz') {
-        return m.reply(`${emoji2} Elección no válida. Por favor, elige cara o cruz.\nEjemplo: *${usedPrefix + command} cara*`);
+    
+    if (!['cara', 'cruz'].includes(eleccion)) {
+        return m.reply(`⚠️ Solo puedes elegir *cara* o *cruz*.\nEjemplo: *${usedPrefix + command} cara 50*`);
     }
-
+    
     if (isNaN(cantidad) || cantidad <= 0) {
-        return m.reply(`${emoji2} Cantidad no válida. Por favor, elige una cantidad de ${moneda} para apostar.\nEjemplo: *${usedPrefix + command} cara 50*`);
+        return m.reply(`⚠️ Ingresa una cantidad válida para apostar.`);
     }
 
-    let userId = m.sender;
-    if (!users[userId]) users[userId] = { coin: 100 };
-    let user = global.db.data.users[m.sender];
+    const user = global.db.data.users[m.sender];
+    
     if (user.coin < cantidad) {
-        return m.reply(`${emoji2} No tienes suficientes ${moneda} para apostar. Tienes ${user.coin} ${moneda}.`);
+        return m.reply(`💰 No tienes suficientes monedas. Tienes ${user.coin} ${moneda}.`);
     }
 
-    let resultado = Math.random() < 0.5 ? 'cara' : 'cruz';
-   let mensaje = `${emoji} La moneda ha caído en `
+    const animacion = [
+        "🪙🔄 La moneda está girando... 🔄🪙",
+        "🪙🔄 Sigue girando... 🔄🪙",
+        "🪙🔄 Casi cae... 🔄🪙"
+    ];
+
+    let { key } = await conn.sendMessage(m.chat, { text: animacion[0] }, { quoted: m });
+
+    for (let i = 1; i < animacion.length; i++) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        await conn.sendMessage(m.chat, { text: animacion[i], edit: key });
+    }
+
+    const resultado = Math.random() < 0.5 ? 'cara' : 'cruz';
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    let mensaje;
     if (resultado === eleccion) {
-        user.coin += cantidad; 
-    mensaje += `*${resultado}* y has ganado *${cantidad} ${moneda}*!`;
+        const ganancia = Math.floor(cantidad * 1.2); // Gana con un 20% extra
+        user.coin += ganancia;
+        mensaje = `🎉 *¡${resultado.toUpperCase()}! Ganaste +${ganancia} ${moneda}* 💰💥`;
     } else {
         user.coin -= cantidad;
-        mensaje += `*${resultado}* y has perdido *${cantidad} ${moneda}*!`;
+        mensaje = `💀 *¡${resultado.toUpperCase()}! Perdiste ${cantidad} ${moneda}* 😢`;
     }
 
-    await conn.reply(m.chat, mensaje, m);
+    await conn.sendMessage(m.chat, { text: mensaje, edit: key });
 };
 
 handler.help = ['cf'];
