@@ -22,8 +22,9 @@ let handler = async (m, { conn, text, command, usedPrefix }) => {
 
   if (isNaN(coin) || coin <= 0) return conn.reply(m.chat, `⚠️ Ingresa una cantidad válida para la apuesta.`, m);
   if (!(color === 'black' || color === 'red')) return conn.reply(m.chat, `⚠️ Elige un color válido: *red* 🔴 o *black* ⚫`, m);
-  if (coin > users.coin) return conn.reply(m.chat, `❌ No tienes suficientes monedas. Tu saldo: *${users.coin}*`, m);
+  if (coin > users.coin) return conn.reply(m.chat, `❌ No tienes suficientes ${moneda}. Tu saldo: *${users.coin}*`, m);
 
+  // 🎡 Animación de la ruleta girando
   const animacion = [
     "🎰 La ruleta está girando... 🔄🔴⚫",
     "🎡 Girando... ⏳🔴⚫",
@@ -45,10 +46,10 @@ let handler = async (m, { conn, text, command, usedPrefix }) => {
   if (resultado === color) {
     let ganancia = coin * 2; 
     users.coin += ganancia;
-    mensaje = `🎉 ¡La bola cayó en *${resultado.toUpperCase()}*! ¡Ganaste *${ganancia}* ${senderName}. 💰`;
+    mensaje = `🎉 ¡La bola cayó en *${resultado.toUpperCase()}*! ¡Ganaste *${ganancia} ${moneda}*. 💰`;
   } else {
     users.coin -= coin;
-    mensaje = `❌ La bola cayó en *${resultado.toUpperCase()}*. Perdiste *${coin}* ${senderName}. 😞`;
+    mensaje = `❌ La bola cayó en *${resultado.toUpperCase()}*. Perdiste *${coin} ${moneda}*. 😞`;
   }
 
   await conn.sendMessage(m.chat, { text: mensaje, edit: key });
