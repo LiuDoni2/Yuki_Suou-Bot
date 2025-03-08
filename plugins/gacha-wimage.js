@@ -1,7 +1,14 @@
 import { promises as fs } from 'fs';
 
 const charactersFilePath = './src/database/characters.json';
-const haremFilePath = './src/database/harem.json';
+
+function normalizeText(text) {
+    return text
+        .normalize("NFD") 
+        .replace(/[\u0300-\u036f]/g, "") 
+        .toLowerCase()
+        .trim();
+}
 
 async function loadCharacters() {
     try {
@@ -12,32 +19,40 @@ async function loadCharacters() {
     }
 }
 
-async function loadHarem() {
-    try {
-        const data = await fs.readFile(haremFilePath, 'utf-8');
-        return JSON.parse(data);
-    } catch (error) {
-        return [];
-    }
-}
-
 let handler = async (m, { conn, args }) => {
-    const characterName = args.join(' ').toLowerCase().trim();
+    if (args.length === 0) {
+        await conn.reply(m.chat, '《✧》Debes especificar un personaje para ver su imagen.\n> Ejemplo » *#wimage Aika Sano*', m);
+        return;
+    }
+
+    const inputName = normalizeText(args.join(' '));
 
     try {
         const characters = await loadCharacters();
-        const character = characters.find(c => c.name.toLowerCase() === characterName);
+
+        const formattedCharacters = characters.map(character => ({
+            ...character,
+            searchTokens: normalizeText(character.name).split(' ').sort().join(' ') 
+        }));
+
+        const character = formattedCharacters.find(c => {
+            const inputSorted = inputName.split(' ').sort().join(' ');
+            return c.searchTokens === inputSorted;
+        });
 
         if (!character) {
-            await conn.reply(m.chat, `《✧》No se ha encontrado el personaje *${characterName}*. Asegúrate de que el nombre esté correcto.`, m);
+            await conn.reply(m.chat, `《✧》No se ha encontrado el personaje *${args.join(' ')}*. Asegúrate de que el nombre esté correcto.`, m);
+            return;
+        }
+
+        if (!character.img || character.img.length === 0) {
+            await conn.reply(m.chat, `《✧》No hay imágenes disponibles para *${character.name}*.`, m);
             return;
         }
 
         const randomImage = character.img[Math.floor(Math.random() * character.img.length)];
 
-        const message = `❀ Nombre » *${character.name}*
-⚥ Género » *${character.gender}*
-❖ Fuente » *${character.source}*`;
+        const message = `🆔 ID » *${character.id}*\n❀ Nombre » *${character.name}*\n⚥ Género » *${character.gender}*\n❖ Fuente » *${character.source}*`;
 
         await conn.sendFile(m.chat, randomImage, `${character.name}.jpg`, message, m);
     } catch (error) {
