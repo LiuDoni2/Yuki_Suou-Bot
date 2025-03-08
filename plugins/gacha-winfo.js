@@ -3,6 +3,14 @@ import { promises as fs } from 'fs';
 const charactersFilePath = './src/database/characters.json';
 const haremFilePath = './src/database/harem.json';
 
+function normalizeText(text) {
+    return text
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "") 
+        .toLowerCase()
+        .trim();
+}
+
 async function loadCharacters() {
     try {
         const data = await fs.readFile(charactersFilePath, 'utf-8');
@@ -27,14 +35,23 @@ let handler = async (m, { conn, args }) => {
         return;
     }
 
-    const characterName = args.join(' ').toLowerCase().trim();
+    const inputName = normalizeText(args.join(' '));
 
     try {
         const characters = await loadCharacters();
-        const character = characters.find(c => c.name.toLowerCase() === characterName);
+
+        const formattedCharacters = characters.map(character => ({
+            ...character,
+            searchTokens: normalizeText(character.name).split(' ').sort().join(' ') 
+        }));
+
+        const character = formattedCharacters.find(c => {
+            const inputSorted = inputName.split(' ').sort().join(' ');
+            return c.searchTokens === inputSorted;
+        });
 
         if (!character) {
-            await conn.reply(m.chat, `《✧》No se encontró el personaje *${characterName}*.`, m);
+            await conn.reply(m.chat, `《✧》No se encontró el personaje *${args.join(' ')}*.`, m);
             return;
         }
 
@@ -43,8 +60,8 @@ let handler = async (m, { conn, args }) => {
         const statusMessage = userEntry 
             ? `Reclamado por @${userEntry.userId.split('@')[0]}` 
             : 'Libre';
-        
-        const message = `❀ Nombre » *${character.name}*\n⚥ Género » *${character.gender}*\n✰ Valor » *${character.value}*\n♡ Estado » ${statusMessage}\n❖ Fuente » *${character.source}*`;
+
+        const message = `🆔 ID » *${character.id}*\n❀ Nombre » *${character.name}*\n⚥ Género » *${character.gender}*\n✰ Valor » *${character.value}*\n♡ Estado » ${statusMessage}\n❖ Fuente » *${character.source}*`;
 
         await conn.reply(m.chat, message, m, { mentions: [userEntry ? userEntry.userId : null] });
     } catch (error) {
