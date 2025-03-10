@@ -1,13 +1,12 @@
-let cooldowns = {};
+const cooldowns = {};
+const TIEMPO_ESPERA = 10 * 1000; 
 
-let handler = async (m, { conn, text, command, usedPrefix }) => {
-  let users = global.db.data.users[m.sender];
-  let tiempoEspera = 10; 
+const handler = async (m, { conn, text, command, usedPrefix }) => {
+  const user = global.db.data.users[m.sender];
 
-  if (cooldowns[m.sender] && Date.now() - cooldowns[m.sender] < tiempoEspera * 1000) {
-    let tiempoRestante = segundosAHMS(Math.ceil((cooldowns[m.sender] + tiempoEspera * 1000 - Date.now()) / 1000));
-    conn.reply(m.chat, `⏳ Ya hiciste una apuesta recientemente. Espera *${tiempoRestante}* antes de apostar de nuevo.`, m);
-    return;
+  if (cooldowns[m.sender] && Date.now() - cooldowns[m.sender] < TIEMPO_ESPERA) {
+    let tiempoRestante = Math.ceil((cooldowns[m.sender] + TIEMPO_ESPERA - Date.now()) / 1000);
+    return conn.reply(m.chat, `⏳ Ya hiciste una apuesta recientemente. Espera *${tiempoRestante} segundos* antes de apostar de nuevo.`, m);
   }
 
   cooldowns[m.sender] = Date.now();
@@ -22,13 +21,21 @@ let handler = async (m, { conn, text, command, usedPrefix }) => {
 
   if (isNaN(coin) || coin <= 0) return conn.reply(m.chat, `⚠️ Ingresa una cantidad válida para la apuesta.`, m);
   if (!(color === 'black' || color === 'red')) return conn.reply(m.chat, `⚠️ Elige un color válido: *red* 🔴 o *black* ⚫`, m);
-  if (coin > users.coin) return conn.reply(m.chat, `❌ No tienes suficientes ${moneda}. Tu saldo: *${users.coin}*`, m);
 
-  // 🎡 Animación de la ruleta girando
+  // 💰 Límite de apuesta según riqueza del jugador
+  const limiteApuesta = user.coin < 5000 ? 5000 : 100000;
+  if (coin > limiteApuesta) {
+    return conn.reply(m.chat, `⚠️ No puedes apostar más de *${limiteApuesta}* ${moneda}.`, m);
+  }
+
+  if (coin > user.coin) {
+    return conn.reply(m.chat, `❌ No tienes suficientes ${moneda}.\n> _sᥲᥣძ᥆: *${user.coin}* ${moneda}_`, m);
+  }
+
   const animacion = [
-    "🎰 La ruleta está girando... 🔄🔴⚫",
-    "🎡 Girando... ⏳🔴⚫",
-    "🎡 La bola está por caer... 🎯"
+    "🎰 _ᥣᥲ rᥙᥣᥱ𝗍ᥲ ᥱs𝗍á gіrᥲᥒძ᥆..._ 🔄🔴⚫",
+    "🎡 _gіrᥲᥒძ᥆ más rá⍴іძ᥆..._ 🚀🔴⚫",
+    "🎡 _ᥴᥲsі ᥴᥲᥱ..._ 🎯"
   ];
 
   let { key } = await conn.sendMessage(m.chat, { text: animacion[0] }, { quoted: m });
@@ -38,18 +45,17 @@ let handler = async (m, { conn, text, command, usedPrefix }) => {
     await conn.sendMessage(m.chat, { text: animacion[i], edit: key });
   }
 
-  // 🎲 Resultado aleatorio
   let resultado = Math.random() < 0.5 ? 'black' : 'red';
   await new Promise(resolve => setTimeout(resolve, 2000));
 
   let mensaje;
   if (resultado === color) {
-    let ganancia = coin * 2; 
-    users.coin += ganancia;
-    mensaje = `🎉 ¡La bola cayó en *${resultado.toUpperCase()}*! ¡Ganaste *${ganancia} ${moneda}*. 💰`;
+    let ganancia = coin * 2;
+    user.coin += ganancia;
+    mensaje = `🎉 ¡La bola cayó en *${resultado.toUpperCase()}*! Ganaste *${ganancia} ${moneda}*. 💥\n> _*sᥲᥣძ᥆ ᥲᥴ𝗍ᥙᥲᥣ:* ${user.coin} ${moneda}_`;
   } else {
-    users.coin -= coin;
-    mensaje = `❌ La bola cayó en *${resultado.toUpperCase()}*. Perdiste *${coin} ${moneda}*. 😞`;
+    user.coin -= coin;
+    mensaje = `❌ La bola cayó en *${resultado.toUpperCase()}*. Perdiste *${coin} ${moneda}*. 😞\n> _*sᥲᥣძ᥆ ᥲᥴ𝗍ᥙᥲᥣ:* ${user.coin} ${moneda}_`;
   }
 
   await conn.sendMessage(m.chat, { text: mensaje, edit: key });
@@ -62,8 +68,3 @@ handler.register = true;
 handler.group = true;
 
 export default handler;
-
-function segundosAHMS(segundos) {
-  let segundosRestantes = segundos % 60;
-  return `${segundosRestantes} segundos`;
-}
