@@ -1,10 +1,11 @@
-const users = {};
+const cooldowns = {};
+const TIEMPO_ESPERA = 10 * 1000; 
 
 const handler = async (m, { conn, text, usedPrefix, command }) => {
     let [eleccion, cantidad] = text.split(' ');
 
     if (!eleccion || !cantidad) {
-        return m.reply(`🪙 Usa: *${usedPrefix + command} cara 50* para apostar.`);
+        return m.reply(` 🪙 Usa: *${usedPrefix + command} cara 50* para apostar.`);
     }
 
     eleccion = eleccion.toLowerCase();
@@ -19,15 +20,27 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     }
 
     const user = global.db.data.users[m.sender];
-    
-    if (user.coin < cantidad) {
-        return m.reply(`💰 No tienes suficientes monedas. Tienes ${user.coin} ${moneda}.`);
+
+    const limiteApuesta = user.coin < 5000 ? 5000 : 100000;
+    if (cantidad > limiteApuesta) {
+        return m.reply(`⚠️ No puedes apostar más de *${limiteApuesta}* ${moneda}.`);
     }
 
+    if (user.coin < cantidad) {
+        return m.reply(`💰 No tienes suficientes ${moneda}.\n> _Tienes ${user.coin} ${moneda}._`);
+    }
+
+    if (cooldowns[m.sender] && Date.now() - cooldowns[m.sender] < TIEMPO_ESPERA) {
+        let tiempoRestante = Math.ceil((cooldowns[m.sender] + TIEMPO_ESPERA - Date.now()) / 1000);
+        return m.reply(`⏳ Espera *${tiempoRestante} segundos* antes de jugar de nuevo.`);
+    }
+
+    cooldowns[m.sender] = Date.now();
+
     const animacion = [
-        "🪙🔄 La moneda está girando... 🔄🪙",
-        "🪙🔄 Sigue girando... 🔄🪙",
-        "🪙🔄 Casi cae... 🔄🪙"
+        "🪙🔄 _ᥣᥲ m᥆ᥒᥱძᥲ ᥱs𝗍á gіrᥲᥒძ᥆..._ 🔄🪙",
+        "🪙🔄 _sіgᥙᥱ gіrᥲᥒძ᥆..._ 🔄🪙",
+        "🪙🔄 _ᥴᥲsі ᥴᥲᥱ..._ 🔄🪙"
     ];
 
     let { key } = await conn.sendMessage(m.chat, { text: animacion[0] }, { quoted: m });
@@ -42,12 +55,12 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
 
     let mensaje;
     if (resultado === eleccion) {
-        const ganancia = Math.floor(cantidad * 1.2); 
+        const ganancia = Math.floor(cantidad * 1.5); 
         user.coin += ganancia;
-        mensaje = `🎉 *¡${resultado.toUpperCase()}! Ganaste +${ganancia} ${moneda}* 💰💥`;
+        mensaje = `🎉 *¡${resultado.toUpperCase()}! Ganaste +${ganancia} ${moneda}* 💰💥\n> _*sᥲᥣძ᥆ ᥲᥴ𝗍ᥙᥲᥣ:* ${user.coin} ${moneda}_`;
     } else {
         user.coin -= cantidad;
-        mensaje = `💀 *¡${resultado.toUpperCase()}! Perdiste ${cantidad} ${moneda}* 😢`;
+        mensaje = `💀 *¡${resultado.toUpperCase()}! Perdiste ${cantidad} ${moneda}* 😢\n> _*sᥲᥣძ᥆ ᥲᥴ𝗍ᥙᥲᥣ:* ${user.coin} ${moneda}_`;
     }
 
     await conn.sendMessage(m.chat, { text: mensaje, edit: key });
