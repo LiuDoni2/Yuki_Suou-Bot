@@ -1,89 +1,89 @@
-//Codígo modificado por ya saben xd wa.me/5351524614
-
 import { delay } from "@whiskeysockets/baileys";
 
-const handler = async (m, { args, usedPrefix, command, conn }) => {
-  const fa = `${emoji} Por favor, ingresa la cantidad que desea apostar.`.trim();
-  if (!args[0] || isNaN(args[0]) || parseInt(args[0]) <= 0) throw fa;
-  
+const handler = async (m, { args, conn }) => {
+  if (!args[0] || isNaN(args[0]) || parseInt(args[0]) <= 0) {
+    return conn.reply(m.chat, `⚠️ Ingresa la cantidad que deseas apostar.\n\n> _Ejemplo: *!slot 500*_`, m);
+  }
+
   const apuesta = parseInt(args[0]);
   const users = global.db.data.users[m.sender];
-  const time = users.lastslot + 10000;
-  if (new Date() - users.lastslot < 10000) throw `${emoji2} Debes esperar ${msToTime(time - new Date())} para usar #slot nuevamente.`;
-  if (apuesta < 100) throw `${emoji2} El minimo para apostar es de 100 XP.`;
-  if (users.exp < apuesta) {
-    throw `${emoji2} Tu XP no es suficiente para aportar esa cantidad.`;
+  const tiempoEspera = 10000;
+
+  if (new Date() - users.lastslot < tiempoEspera) {
+    return conn.reply(m.chat, `⌛ Espera ${msToTime(tiempoEspera - (new Date() - users.lastslot))} antes de jugar de nuevo.`, m);
   }
 
-  const emojis = ['💴', '💵', '💶'];
-  const getRandomEmojis = () => {
-    const x = Array.from({ length: 3 }, () => emojis[Math.floor(Math.random() * emojis.length)]);
-    const y = Array.from({ length: 3 }, () => emojis[Math.floor(Math.random() * emojis.length)]);
-    const z = Array.from({ length: 3 }, () => emojis[Math.floor(Math.random() * emojis.length)]);
-    return { x, y, z };
-  };
+  if (apuesta < 100) return conn.reply(m.chat, `⚠️ La apuesta mínima es de *100* ${moneda}.`, m);
 
-  const initialText = '🎰 | *SLOTS* \n────────\n';
-  let { key } = await conn.sendMessage(m.chat, { text: initialText }, { quoted: m });
+ const limiteApuesta = users.coin < 5000 ? 5000 : 100000;
+if (apuesta > limiteApuesta) {
+  return conn.reply(m.chat, `⚠️ Tu límite de apuesta es de *${limiteApuesta}* ${moneda}.`, m);
+}
 
-  const animateSlots = async () => {
-    for (let i = 0; i < 5; i++) {
-      const { x, y, z } = getRandomEmojis();
-      const animationText = `
-🎰 | *SLOTS* 
-────────
-${x[0]} : ${y[0]} : ${z[0]}
-${x[1]} : ${y[1]} : ${z[1]}
-${x[2]} : ${y[2]} : ${z[2]}
-────────`;
-      await conn.sendMessage(m.chat, { text: animationText, edit: key }, { quoted: m });
-      await delay(300);
+  if (users.coin < apuesta) return conn.reply(m.chat, `❌ No tienes suficientes ${moneda}.`, m);
+
+  const emojis = ['🍒', '🍋', '🍊', '🍇', '🍉', '💎', '🔔', '7️⃣'];
+  const premioRaro = '💎';
+  const getRandomEmojis = () => Array.from({ length: 3 }, () => emojis[Math.floor(Math.random() * emojis.length)]);
+
+  const renderSlots = (rows) => `
+🎰 *SLOTS* 🎰
+╔═════════╗
+║ ${rows[0][0]} | ${rows[0][1]} | ${rows[0][2]} ║
+║ ${rows[1][0]} | ${rows[1][1]} | ${rows[1][2]} ◀️
+║ ${rows[2][0]} | ${rows[2][1]} | ${rows[2][2]} ║
+╚═════════╝`;
+
+  let { key } = await conn.sendMessage(m.chat, { text: `🎰 *_sᥣ᥆𝗍s gіrᥲᥒძ᥆..._*` }, { quoted: m });
+
+  for (let i = 0; i < 5; i++) {
+    await delay(300);
+    await conn.sendMessage(m.chat, { text: renderSlots([getRandomEmojis(), getRandomEmojis(), getRandomEmojis()]), edit: key }, { quoted: m });
+  }
+
+  const resultadoFinal = [getRandomEmojis(), getRandomEmojis(), getRandomEmojis()];
+  let mensajeFinal;
+  let premio = Math.floor(apuesta * 1.4);
+  let jackpot = Math.random() < 0.05;
+
+  if (resultadoFinal[1][0] === resultadoFinal[1][1] && resultadoFinal[1][1] === resultadoFinal[1][2]) {
+    if (jackpot && resultadoFinal[1][0] === premioRaro) {
+      premio = Math.floor(apuesta * 4);
+      mensajeFinal = `💎 *¡JACKPOT! GANASTE +${premio} ${moneda}!*`;
+    } else {
+      mensajeFinal = `🎉 *¡Ganaste! +${premio} ${moneda}!*`;
     }
-  };
 
-  await animateSlots();
-
-  const { x, y, z } = getRandomEmojis();
-  let end;
-  if (x[0] === y[0] && y[0] === z[0]) {
-    end = `${emoji} Ganaste! 🎁 +${apuesta + apuesta} XP.`;
-    users.exp += apuesta;
-  } else if (x[0] === y[0] || x[0] === z[0] || y[0] === z[0]) {
-    end = `${emoji2} Casi lo logras!, sigue intentandolo = *Toma +10 XP*`;
-    users.exp += 10;
+    users.coin += premio;
+    users.victorias = (users.victorias || 0) + 1;
   } else {
-    end = `${emoji4} Perdiste -${apuesta} XP`;
-    users.exp -= apuesta;
+    mensajeFinal = `😢 *Perdiste -${apuesta} ${moneda}.*`;
+    users.coin = Math.max(0, users.coin - apuesta);
+    users.derrotas = (users.derrotas || 0) + 1;
   }
 
+  users.jugadas = (users.jugadas || 0) + 1;
   users.lastslot = Date.now();
-  const finalResult = `
-🎰 | *SLOTS* 
-────────
-${x[0]} : ${y[0]} : ${z[0]}
-${x[1]} : ${y[1]} : ${z[1]}
-${x[2]} : ${y[2]} : ${z[2]}
-────────
-🎰 | ${end}`;
-  await conn.sendMessage(m.chat, { text: finalResult, edit: key }, { quoted: m });
+
+  if (Math.random() < 0.05) {
+    const bonus = Math.floor(apuesta * 0.3);
+    users.coin += bonus;
+    mensajeFinal += `\n🎁 *¡Sorpresa! Has ganado un bono de ${bonus} ${moneda}!*`;
+  }
+
+  await conn.sendMessage(m.chat, { text: `${renderSlots(resultadoFinal)}\n\n${mensajeFinal}\n\n> _*sᥲᥣძ᥆ ᥲᥴ𝗍ᥙᥲᥣ:* ${users.coin} ${moneda}_`, edit: key }, { quoted: m });
 };
 
 handler.help = ['slot <apuesta>'];
-handler.tags = ['economy'];
+handler.tags = ['game'];
 handler.group = true;
-handler.register = true
 handler.command = ['slot'];
+handler.register = true;
+
 export default handler;
 
 function msToTime(duration) {
-  const milliseconds = parseInt((duration % 1000) / 100);
   let seconds = Math.floor((duration / 1000) % 60);
   let minutes = Math.floor((duration / (1000 * 60)) % 60);
-  let hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
-
-  hours = (hours < 10) ? '0' + hours : hours;
-  minutes = (minutes < 10) ? '0' + minutes : minutes;
-  seconds = (seconds < 10) ? '0' + seconds : seconds;
-
-  return minutes + ' m ' + seconds + ' s ';
+  return `${minutes}m ${seconds}s`;
 }
