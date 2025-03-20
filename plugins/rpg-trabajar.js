@@ -1,24 +1,24 @@
 const cooldowns = {};
-const TIEMPO_ESPERA = 5 * 60 * 1000; 
+const TIEMPO_ESPERA = 5 * 60 * 1000;
 
 const handler = async (m, { conn }) => {
     const user = global.db.data.users[m.sender] || {};
-    user.coin = user.coin || 0; 
+    user.coin = user.coin || 0;
 
     if (cooldowns[m.sender] && Date.now() - cooldowns[m.sender] < TIEMPO_ESPERA) {
         let tiempoRestante = segundosAHMS(Math.ceil((cooldowns[m.sender] + TIEMPO_ESPERA - Date.now()) / 1000));
-        return conn.reply(m.chat, `⏱️ Debes esperar *${tiempoRestante}* para volver a trabajar.`, m);
+        return conn.reply(m.chat, `⏳ ¡Espera un poco! Debes descansar *${tiempoRestante}* antes de volver a trabajar. 😴`, m);
     }
 
     cooldowns[m.sender] = Date.now();
 
-    let rsl = Math.floor(Math.random() * 350) + 50; 
+    let rsl = Math.floor(Math.random() * 350) + 50;
     const trabajoElegido = pickRandom(trabajos);
 
     const animacion = [
-        `_🛠️ ${trabajoElegido}... ⏳_`,
-        `_💼Sigues trabajando...📊_`,
-        `_🔨 Casi terminas... 🏗️_`
+        `⚙️ Buscando un trabajo...`,
+        `👨‍💻 ¡Manos a la obra! Estás trabajando como ${trabajoElegido.split(" ")[1]}...`,
+        `📈 ¡Casi terminas tu jornada!`,
     ];
 
     let { key } = await conn.sendMessage(m.chat, { text: animacion[0] }, { quoted: m });
@@ -32,7 +32,8 @@ const handler = async (m, { conn }) => {
 
     await new Promise(resolve => setTimeout(resolve, 2000));
 
-    const mensajeFinal = `✅ ${trabajoElegido} y recibes *${toNum(rsl)}* ${moneda} 💰.\n> _*sᥲᥣძ᥆ ᥲᥴ𝗍ᥙᥲᥣ:* ${user.coin} ${moneda}_`;
+    const moneda = '${moneda}; // Puedes definir tu moneda aquí si no lo tienes globalmente
+    const mensajeFinal = `✅ ¡Excelente trabajo! Has completado tu tarea como ${trabajoElegido.substring(2)} y recibes *${toNum(rsl)}* ${moneda} 💰.\n\n📊 *Balance Actual:* ${user.coin} ${moneda}`;
     await conn.sendMessage(m.chat, { text: mensajeFinal, edit: key });
 };
 
@@ -64,49 +65,49 @@ function pickRandom(list) {
 }
 
 const trabajos = [
-    "🛠️ Trabajas como cortador de galletas",
-    "🔫 Trabajas para una empresa militar privada",
-    "🍷 Organizas un evento de cata de vinos",
-    "🧹 Limpias la chimenea",
-    "🎮 Desarrollas juegos",
-    "💼 Trabajas en la oficina",
-    "🎭 Participas en una obra de teatro",
-    "🍔 Trabajas en un restaurante local como cocinero(a)",
-    "📝 Escribes frases para galletas de la fortuna",
-    "🛍️ Compraste y vendiste artículos",
-    "🔧 Reparas máquinas recreativas",
-    "🚜 Cultivas vegetales y ganas",
-    "🎨 Haces arte callejero y ganas",
-    "🏰 Construyes castillos de arena para turistas",
-    "🛠️ Trabajas en Disneyland disfrazado de panda",
-    "📷 Vendes fotos de paisajes",
-    "🚗 Trabajas como conductor de taxis",
-    "👨‍🍳 Cocinas para una fiesta",
-    "💻 Diseñas un logo para una empresa",
-    "🎤 Imitas voces de personajes animados",
-    "🛸 Diseñas platillos voladores de juguete",
-    "🎩 Trabajas como mago en fiestas infantiles",
-    "🍕 Haces malabares con pizzas en una pizzería",
-    "🎻 Tocas el violín en el metro",
-    "🦸‍♂️ Eres un superhéroe callejero improvisado",
-    "🧁 Vendes cupcakes temáticos en ferias",
-    "🐠 Alimentas peces en un acuario gigante",
-    "🛶 Das paseos en góndola a turistas",
-    "🦜 Enseñas a loros a decir frases graciosas",
-    "🎥 Extras en películas de acción",
-    "🐉 Diseñas dragones de papel para festivales",
-    "📚 Eres narrador de cuentos en una librería",
-    "🚲 Haces entregas en bicicleta por la ciudad",
-    "🧙‍♂️ Enseñas trucos de magia en una escuela",
-    "🚀 Diseñas modelos de cohetes en miniatura",
-    "🌮 Eres crítico gastronómico de tacos",
-    "🛏️ Pruebas colchones para una empresa de descanso",
-    "🌊 Eres instructor de surf en una isla paradisíaca",
-    "🦄 Diseñas disfraces de unicornios personalizados",
-    "🐧 Cuidas pingüinos en un zoológico",
-    "💡 Inventas nombres creativos para productos",
-    "🏴‍☠️ Haces de pirata en un parque temático",
-    "🦷 Ayudas a niños a perder su primer diente como 'Hada de los dientes' de alquiler",
-    "🚜 Manejas un tractor en una granja de girasoles",
-    "👽 Eres un actor disfrazado de alienígena en eventos de ciencia ficción"
+    "🛠️ Cortador de galletas",
+    "🔫 Trabajador en una empresa militar privada",
+    "🍷 Organizador de un evento de cata de vinos",
+    "🧹 Limpiador de chimeneas",
+    "🎮 Desarrollador de juegos",
+    "💼 Empleado de oficina",
+    "🎭 Actor/Actriz en una obra de teatro",
+    "🍔 Cocinero(a) en un restaurante local",
+    "📝 Escritor de frases para galletas de la fortuna",
+    "🛍️ Comerciante de artículos",
+    "🔧 Técnico de reparación de máquinas recreativas",
+    "🚜 Agricultor de vegetales",
+    "🎨 Artista callejero",
+    "🏰 Constructor de castillos de arena para turistas",
+    "🛠️ Persona disfrazada de panda en Disneyland",
+    "📷 Vendedor de fotos de paisajes",
+    "🚗 Conductor de taxis",
+    "👨‍🍳 Chef en una fiesta",
+    "💻 Diseñador de logos para una empresa",
+    "🎤 Imitador de voces de personajes animados",
+    "🛸 Diseñador de platillos voladores de juguete",
+    "🎩 Mago en fiestas infantiles",
+    "🍕 Malabarista de pizzas en una pizzería",
+    "🎻 Violinista en el metro",
+    "🦸‍♂️ Superhéroe callejero improvisado",
+    "🧁 Vendedor de cupcakes temáticos en ferias",
+    "🐠 Alimentador de peces en un acuario gigante",
+    "🛶 Gondolero para turistas",
+    "🦜 Entrenador de loros para decir frases graciosas",
+    "🎥 Extra en películas de acción",
+    "🐉 Diseñador de dragones de papel para festivales",
+    "📚 Narrador de cuentos en una librería",
+    "🚲 Repartidor en bicicleta por la ciudad",
+    "🧙‍♂️ Profesor de trucos de magia en una escuela",
+    "🚀 Diseñador de modelos de cohetes en miniatura",
+    "🌮 Crítico gastronómico de tacos",
+    "🛏️ Probador de colchones para una empresa de descanso",
+    "🌊 Instructor de surf en una isla paradisíaca",
+    "🦄 Diseñador de disfraces de unicornios personalizados",
+    "🐧 Cuidador de pingüinos en un zoológico",
+    "💡 Inventor de nombres creativos para productos",
+    "🏴‍☠️ Pirata en un parque temático",
+    "🦷 'Hada de los dientes' de alquiler",
+    "🚜 Conductor de tractor en una granja de girasoles",
+    "👽 Actor disfrazado de alienígena en eventos de ciencia ficción"
 ];
