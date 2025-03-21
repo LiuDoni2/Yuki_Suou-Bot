@@ -1,127 +1,118 @@
 import { promises as fs } from 'fs';
+import { getCooldown, setCooldown } from './cooldowns.js';
 
 const charactersFilePath = './src/database/characters.json';
-const haremFilePath = './src/database/harem.json';
+const cooldownTime = 20 * 60 * 1000; 
+const reservaPersonajes = {}; // Diccionario compartido con `gacha-claim.js`
 
-const cooldowns = {};
-
-async function loadCharacters() {
-  try {
-    const data = await fs.readFile(charactersFilePath, 'utf-8');
-    return JSON.parse(data);
-  } catch (error) {
-    throw new Error('❀ No se pudo cargar el archivo characters.json.');
-  }
-}
-
-async function saveCharacters(characters) {
-  try {
-    await fs.writeFile(charactersFilePath, JSON.stringify(characters, null, 2), 'utf-8');
-  } catch (error) {
-    throw new Error('❀ No se pudo guardar el archivo characters.json.');
-  }
-}
-
-async function loadHarem() {
-  try {
-    const data = await fs.readFile(haremFilePath, 'utf-8');
-    return JSON.parse(data);
-  } catch (error) {
-    return [];
-  }
-}
-
-async function saveHarem(harem) {
-  try {
-    await fs.writeFile(haremFilePath, JSON.stringify(harem, null, 2), 'utf-8');
-  } catch (error) {
-    throw new Error('❀ No se pudo guardar el archivo harem.json.');
-  }
+async function loadJSON(filePath, defaultValue = []) {
+    try {
+        const data = await fs.readFile(filePath, 'utf-8');
+        return data.trim() ? JSON.parse(data) : defaultValue;
+    } catch (error) {
+        console.error(`❀ Error cargando ${filePath}: ${error.message}`);
+        return defaultValue;
+    }
 }
 
 let handler = async (m, { conn }) => {
-  const userId = m.sender;
-  const now = Date.now();
+    const userId = m.sender;
+    const now = Date.now();
 
-  if (cooldowns[userId] && now < cooldowns[userId]) {
-    const remainingTime = Math.ceil((cooldowns[userId] - now) / 1000);
-    const minutes = Math.floor(remainingTime / 60);
-    const seconds = remainingTime % 60;
-    return await conn.reply(
-      m.chat,
-      `《✧》Debes esperar *${minutes} minutos y ${seconds} segundos* para usar *#rw* de nuevo.`,
-      m
-    );
-  }
-
-  try {
-    const characters = await loadCharacters();
-    
-    let freeCharacters = characters.filter(c => !c.user);
-    let claimedCharacters = characters.filter(c => c.user);
-
-    let randomCharacter;
-
-    if (freeCharacters.length > 0) {
-      // 📌 Preferir personajes libres
-      randomCharacter = freeCharacters[Math.floor(Math.random() * freeCharacters.length)];
-    } else {
-      randomCharacter = claimedCharacters[Math.floor(Math.random() * claimedCharacters.length)];
+    if (getCooldown(userId, "rollwaifu") > 0) {
+        const remainingTime = Math.ceil(getCooldown(userId, "rollwaifu") / 1000);
+        return await conn.reply(m.chat, `⏳ *Debes esperar ${Math.floor(remainingTime / 60)} minutos y ${remainingTime % 60} segundos para volver a usar #rw.*`, m);
     }
 
-    if (!randomCharacter.img || !Array.isArray(randomCharacter.img) || randomCharacter.img.length === 0) {
-      throw new Error("El personaje no tiene imágenes definidas.");
+    try {
+        let characters = await loadJSON(charactersFilePath);
+
+        // 🔹 Intentar primero con personajes libres
+        let freeCharacters = characters.filter(c => !c.user);
+        let randomCharacter = freeCharacters.length > 0 
+            ? freeCharacters[Math.floor(Math.random() * freeCharacters.length)]
+            : characters[Math.floor(Math.random() * characters.length)]; // Si no hay libres, elegir cualquiera
+
+        if (!randomCharacter.img || randomCharacter.img.length === 0) {
+            throw new Error(`El personaje ${randomCharacter.name} no tiene imágenes definidas.`);
+        }
+
+        let randomImage = randomCharacter.img[Math.floor(Math.random() * randomCharacter.img.length)];
+        let ext = randomImage.split('.').pop().toLowerCase();
+        ext = ["jpg", "jpeg", "png", "gif", "webp"].includes(ext) ? ext : "jpg";
+
+        let esReclamable = !randomCharacter.user;
+        let statusMessage = esReclamable ? "Libre" : `🔒 Reclamado por @${randomCharacter.user.split('@')[0]}`;
+        
+        if (esReclamable) {
+            reservaPersonajes[randomCharacter.id] = {
+                reservadoPor: userId,
+                expiraEn: now + 15000 
+            };
+        }
+
+        const animaciones = [
+            "_🔮 Invocando un personaje..._",
+            "_✨ Explorando el multiverso..._",
+            "_📜 Descifrando los datos del personaje..._",
+            "_👀 Sientes una presencia acercándose..._",
+            `_😲 ¡Un personaje ha aparecido ante ti!_`
+        ];
+
+        let { key } = await conn.sendMessage(m.chat, { text: animaciones[0] }, { quoted: m });
+
+        for (let i = 1; i < animaciones.length; i++) {
+            await new Promise(resolve => setTimeout(resolve, 1200)); 
+            await conn.sendMessage(m.chat, { text: animaciones[i], edit: key });
+        }
+
+        let genero = (randomCharacter.gender || "desconocido").toLowerCase();
+
+        let reaccionesMasculino = [
+            `*${randomCharacter.name} cruza los brazos, esperando un dueño digno...*`,
+            `*${randomCharacter.name} te observa con determinación...*`,
+            `*${randomCharacter.name} sonríe confiado, esperando a alguien fuerte...*`
+        ];
+        let reaccionesFemenino = [
+            `*${randomCharacter.name} se sonroja y espera que la reclames...*`,
+            `*${randomCharacter.name} te mira con dulzura, esperando ser tuya...*`,
+            `*${randomCharacter.name} sonríe tímidamente, esperando un dueño...*`
+        ];
+        let reaccionesNeutro = [
+            `*${randomCharacter.name} aguarda en silencio, esperando a alguien especial...*`,
+            `*${randomCharacter.name} parece curioso, observando quién lo reclamará...*`,
+            `*${randomCharacter.name} flota en el espacio, esperando a su próximo dueño...*`
+        ];
+
+        let reaccion;
+        if (genero.includes("hombre") || genero.includes("masculino")) {
+            reaccion = reaccionesMasculino[Math.floor(Math.random() * reaccionesMasculino.length)];
+        } else if (genero.includes("mujer") || genero.includes("femenino")) {
+            reaccion = reaccionesFemenino[Math.floor(Math.random() * reaccionesFemenino.length)];
+        } else {
+            reaccion = reaccionesNeutro[Math.floor(Math.random() * reaccionesNeutro.length)];
+        }
+
+        let mensajeFinal = `🎭 *¡Nuevo personaje descubierto!* 🎭\n\n` +
+                           `✨ *ᥒ᥆mᑲrᥱ:* ${randomCharacter.name}\n` +
+                           `📜 *𝖿ᥙᥱᥒ𝗍ᥱ:* ${randomCharacter.source}\n` +
+                           `🗝 *ᥱs𝗍ᥲძ᥆:* ${statusMessage}\n\n` +
+                           `${reaccion}\n` +
+                           `> 𝐈𝐃: ${randomCharacter.id}\n`;
+
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        await conn.sendFile(m.chat, randomImage, `${randomCharacter.name}.${ext}`, mensajeFinal, m);
+
+        setCooldown(userId, "rollwaifu", cooldownTime);
+
+    } catch (error) {
+        await conn.reply(m.chat, `❌ Error al cargar el personaje: ${error.message}`, m);
     }
-    
-    const randomImage = randomCharacter.img[Math.floor(Math.random() * randomCharacter.img.length)];
-
-    let ext = 'jpg';
-    const matches = randomImage.match(/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i);
-    if (matches) {
-      ext = matches[1].toLowerCase();
-    }
-    const fileName = `${randomCharacter.name}.${ext}`;
-
-    const harem = await loadHarem();
-    let userEntry = harem.find(entry => entry.characterId === randomCharacter.id);
-
-    let statusMessage = 'Libre';
-    if (randomCharacter.user) {
-      const claimedName = await conn.getName(randomCharacter.user);
-      statusMessage = `Reclamado por @${claimedName}`;
-    }
-
-    const message = `❀ Nombre » *${randomCharacter.name}*
-⚥ Género » *${randomCharacter.gender}*
-✰ Valor » *${randomCharacter.value}*
-♡ Estado » ${statusMessage}
-❖ Fuente » *${randomCharacter.source}*
-ID: *${randomCharacter.id}*`;
-
-    const mentions = userEntry ? [userEntry.userId] : [];
-    await conn.sendFile(m.chat, randomImage, fileName, message, m, { mentions });
-
-    if (!userEntry && randomCharacter.user) {
-      userEntry = {
-        userId: randomCharacter.user,
-        characterId: randomCharacter.id,
-        lastVoteTime: now,
-        voteCooldown: now + 1.5 * 60 * 60 * 1000
-      };
-      harem.push(userEntry);
-      await saveHarem(harem);
-    }
-
-    await saveCharacters(characters);
-    cooldowns[userId] = now + 20 * 60 * 1000;
-  } catch (error) {
-    await conn.reply(m.chat, `✘ Error al cargar el personaje: ${error.message}`, m);
-  }
 };
 
-handler.help = ['ver', 'rw', 'rollwaifu'];
+handler.help = ['rw', 'rollwaifu'];
 handler.tags = ['gacha'];
-handler.command = ['ver', 'rw', 'rollwaifu'];
+handler.command = ['rw', 'rollwaifu'];
 handler.group = true;
 handler.register = true;
 
