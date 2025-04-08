@@ -3,7 +3,6 @@ import { promises as fs } from 'fs';
 const CHARACTERS_FILE = './src/database/characters.json';
 const HAREM_FILE = './src/database/harem.json';
 
-// Función para normalizar nombres
 function normalizarNombre(nombre) {
     return nombre
         .toLowerCase()
@@ -13,7 +12,6 @@ function normalizarNombre(nombre) {
         .trim();
 }
 
-// Cargar JSON de forma segura
 async function loadJSON(filePath, defaultValue = []) {
     try {
         if (!(await fs.stat(filePath).catch(() => false))) return defaultValue;
@@ -25,7 +23,6 @@ async function loadJSON(filePath, defaultValue = []) {
     }
 }
 
-// Guardar JSON de forma segura
 async function saveJSON(filePath, data) {
     try {
         const tempFilePath = filePath + ".tmp";
@@ -36,7 +33,7 @@ async function saveJSON(filePath, data) {
     }
 }
 
-let pendingConfirmations = new Map(); // Almacena confirmaciones pendientes
+let pendingConfirmations = new Map(); 
 
 let handler = async (m, { conn, args }) => {
     if (!args.length) {
@@ -53,14 +50,11 @@ let handler = async (m, { conn, args }) => {
         return conn.reply(m.chat, `❌ No se encontró el personaje "*${busqueda}*".`, m);
     }
 
-    // Guardar en la lista de confirmaciones pendientes
     pendingConfirmations.set(m.sender, { chat: m.chat, personaje });
 
-    // Enviar mensaje de confirmación
     return conn.reply(m.chat, `⚠️ ¿Seguro que deseas eliminar a *${personaje.name}* (${personaje.id})? Responde con *CONFIRMAR* para proceder.`, m);
 };
 
-// Manejador de confirmación
 let confirmHandler = async (m, { conn }) => {
     if (!pendingConfirmations.has(m.sender)) return;
     
@@ -71,24 +65,20 @@ let confirmHandler = async (m, { conn }) => {
         return conn.reply(chat, '❌ Eliminación cancelada.', m);
     }
 
-    // Cargar datos
     let personajes = await loadJSON(CHARACTERS_FILE);
     let harem = await loadJSON(HAREM_FILE);
 
-    // Eliminar personaje
     let nuevosPersonajes = personajes.filter(p => p.id !== personaje.id);
     let nuevoHarem = harem.filter(h => h.characterId !== personaje.id);
 
-    // Guardar cambios
     await saveJSON(CHARACTERS_FILE, nuevosPersonajes);
     await saveJSON(HAREM_FILE, nuevoHarem);
 
-    pendingConfirmations.delete(m.sender); // Eliminar confirmación pendiente
+    pendingConfirmations.delete(m.sender); 
 
     return conn.reply(chat, `✅ *${personaje.name}* (${personaje.id}) ha sido eliminado correctamente.`, m);
 };
 
-// Registrar confirmHandler como manejador global de mensajes
 handler.before = confirmHandler;
 
 handler.help = ['deletechar <nombre/ID>'];
